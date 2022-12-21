@@ -6,6 +6,10 @@ import math
 import argparse
 from ast import arg
 
+import tqdm
+import time
+
+
 
 class Symulacja:
 
@@ -60,7 +64,7 @@ class Symulacja:
         
 
 
-    def licz_magnetyzacje(self, n, m, nr): # i przy okazji rysuj obrazek
+    def licz_magnetyzacje(self, n, m, nr, obrazki): # i przy okazji rysuj obrazek
         magnetyzacja = 0
         img = Image.new('RGB', (10*n + 4, 10*m + 4), (255, 255, 255)) # rozmiar obrazka zmienia się w zależności od rozmiarów siatki
         klatka = ImageDraw.Draw(img)
@@ -77,14 +81,19 @@ class Symulacja:
         magnetyzacja_cała = magnetyzacja / (n*m)
         #print('Magnetyzacja: ', magnetyzacja_cała)
 #        img.show()
-        img.save(prefix + str(nr) +'.png') # dodaćwarunek na brak nazwy
+        if (prefix != 'brak'):
+            img.save(prefix + str(nr) +'.png') # dodać warunek na brak nazwy
+        obrazki.append(img)
         return magnetyzacja_cała
     
-    def makrokroki(s, n, m, J, B, beta, liczba_krokow):
-        
-        for i in range(liczba_krokow):
-            magnetyzacja = s.licz_magnetyzacje(n, m, i)
-            print('Magnetyzacja: ', magnetyzacja)
+    def makrokroki(s, n, m, J, B, beta, liczba_krokow, obrazki, magnetyzacje):
+        for i in tqdm.tqdm(range(liczba_krokow)):
+        #    time.sleep(1)
+    #    for i in range(liczba_krokow):
+            magnetyzacja = s.licz_magnetyzacje(n, m, i, obrazki)
+            
+            magnetyzacje.append(magnetyzacja)
+        #    print('Magnetyzacja: ', magnetyzacja)
                 #zapisanie magnetyzacji do pliku
             magnetyzacja_suma = magnetyzacja * (n*m)
             stara_energia = s.liczenie_energii(n, m, J, B, magnetyzacja_suma) 
@@ -94,19 +103,56 @@ class Symulacja:
                 stara_energia = energia
 
 
-#dorobić wczytywanie parametrów
-n = 5
-m = 4 # tego nie było, ale w sumie czemu nie - siatka nie musi być kwadratowa
-J = 1
-beta = 1
-B = 1
-liczba_krokow = 4 # makrokroków 1 * liczba spinów
-gestosc_spinow = 0.5
-prefix = 'ising'
-#nazwę pliku z obrazkami (prefix, do którego program dodaje numer kroku; jeżeli parametr nie zostanie podany, obrazki się nie generują)
-#nazwę pliku z animacją (jeżeli parametr nie zostanie podany, animacja się nie generuje)
-#nazwę pliku z magnetyzacją (jeżeli parametr nie zostanie podany, magnetyzacja się nie zapisuje)
+# dorobić wczytywanie parametrów
+parser = argparse.ArgumentParser()
+parser.add_argument('-n', '--n', default = 7)
+parser.add_argument('-j', '--J', default = 1)
+parser.add_argument('-b', '--beta', default = 1)
+parser.add_argument('-c', '--B', default = 1)
+
+parser.add_argument('-k', '--kroki', default = 4) # liczba kroków
+parser.add_argument('-s', '--spiny', default = 0.5) # początkowa gęstość spinów
+# opcjonalne:
+# nazwę pliku z obrazkami (prefix, do którego program dodaje mumer kroku; jeżeli parametr
+#  nie zostanie podany, obrazki się nie generują)
+parser.add_argument('-o', '--obrazki', default = 'brak')
+# nazwę pliku z animacją (jeżeli parametr nie zostanie podany, animacja się nie generuje)
+parser.add_argument('-a', '--animacja', default = 'brak')
+# nazwę pliku z magnetyzacją (jeżeli parametr nie zostanie podany, magnetyzacja się nie zapisuje)
+parser.add_argument('-m', '--magnetyzacja', default = 'brak')
+
+
+args = parser.parse_args()
+
+n = int(args.n)
+m = n # tego nie było, ale w sumie czemu nie - siatka nie musi być kwadratowa
+J = float(args.J)
+beta = float(args.beta)
+B = float(args.B)
+liczba_krokow = int(args.kroki) # makrokroków 1 * liczba spinów
+gestosc_spinow = float(args.spiny)
+
+#prefix = 'ising'
+
+prefix = args.obrazki
+animacja = args.animacja
+plik_magnetyzacja = args.magnetyzacja
+
+obrazki = []
+
+magnetyzacje = []
 
 symulacja1 = Symulacja(n, m, gestosc_spinow)
-symulacja1.makrokroki(n, m, J, B, beta, liczba_krokow)
+symulacja1.makrokroki(n, m, J, B, beta, liczba_krokow, obrazki, magnetyzacje)
 
+
+if plik_magnetyzacja != 'brak':
+    with open(plik_magnetyzacja, 'w') as f:
+        for m in magnetyzacje:
+            f.write(str(m) + '\n')
+
+
+if animacja != 'brak':      
+    obrazki[0].save(animacja + '.gif',
+               save_all=True, append_images=obrazki[1:], duration=100, loop=1)
+               # loop odpowiada za to, czy filmik zapętla się w nieskończoność, czy nie
