@@ -92,3 +92,5 @@ data_hist = vcolor(hist, pattern)
 for line in graph.graph('Histogram liczby słów', data_hist):
 #for line in graph.graph('Histogram liczby słów', data):
     print(line)
+    
+#koniec
