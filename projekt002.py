@@ -103,7 +103,7 @@ class Symulacja:
                 stara_energia = energia
 
 
-# dorobić wczytywanie parametrów
+# wczytywanie parametrów
 parser = argparse.ArgumentParser()
 parser.add_argument('-n', '--n', default = 7)
 parser.add_argument('-j', '--J', default = 1)
