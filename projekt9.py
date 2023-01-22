@@ -36,6 +36,7 @@ fig.line(ts1, res1[:, 2], color = 'forestgreen', line_width = 3, legend_label = 
 
 # nazwa atrybutu, który został zmieniony; stara wartość; nowa wartość
 def callback_beta(attr, old, new):
+    global beta
     beta = new
 
     fig.renderers = []
@@ -51,7 +52,9 @@ def callback_beta(attr, old, new):
     fig.line(ts1, res1[:, 1], color = 'cornflowerblue', line_width = 3, legend_label = 'I')
     fig.line(ts1, res1[:, 2], color = 'forestgreen', line_width = 3, legend_label = 'R')
 
+
 def callback_gamma(attr, old, new):
+    global gamma
     gamma = new
     
     fig.renderers = []
@@ -66,6 +69,7 @@ def callback_gamma(attr, old, new):
     fig.line(ts1, res1[:, 0], color = 'orange', line_width = 3, legend_label = 'S')
     fig.line(ts1, res1[:, 1], color = 'cornflowerblue', line_width = 3, legend_label = 'I')
     fig.line(ts1, res1[:, 2], color = 'forestgreen', line_width = 3, legend_label = 'R')
+
 
 
 
